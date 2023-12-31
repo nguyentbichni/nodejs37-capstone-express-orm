@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model comments {
+  id         Int       @id @default(autoincrement())
+  content    String?   @db.VarChar(225)
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+  deleted_at DateTime? @db.Timestamp(0)
+  user_id    Int?
+  image_id   Int?
+  users      users?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "comments_ibfk_1")
+  images     images?   @relation(fields: [image_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "comments_ibfk_2")
+
+  @@index([image_id], map: "image_id")
+  @@index([user_id], map: "user_id")
+}
+
+model images {
+  id          Int           @id @default(autoincrement())
+  name        String?       @db.VarChar(225)
+  link        String?       @db.VarChar(225)
+  description String?       @db.VarChar(225)
+  created_at  DateTime?     @default(now()) @db.Timestamp(0)
+  updated_at  DateTime?     @default(now()) @db.Timestamp(0)
+  deleted_at  DateTime?     @db.Timestamp(0)
+  user_id     Int?
+  comments    comments[]
+  users       users?        @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "images_ibfk_1")
+  save_images save_images[]
+
+  @@index([user_id], map: "user_id")
+}
+
+model save_images {
+  user_id    Int
+  image_id   Int
+  created_at DateTime? @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(0)
+  deleted_at DateTime? @db.Timestamp(0)
+  users      users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "save_images_ibfk_1")
+  images     images    @relation(fields: [image_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "save_images_ibfk_2")
+
+  @@id([user_id, image_id])
+  @@index([image_id], map: "image_id")
+}
+
+model users {
+  id          Int           @id @default(autoincrement())
+  full_name   String?       @db.VarChar(225)
+  email       String?       @db.VarChar(225)
+  password    String?       @db.VarChar(225)
+  birthday    DateTime?     @db.Date
+  avatar      String?       @db.VarChar(225)
+  created_at  DateTime?     @default(now()) @db.Timestamp(0)
+  updated_at  DateTime?     @default(now()) @db.Timestamp(0)
+  deleted_at  DateTime?     @db.Timestamp(0)
+  comments    comments[]
+  images      images[]
+  save_images save_images[]
+}
